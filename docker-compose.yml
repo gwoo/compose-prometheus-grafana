@@ -1,0 +1,42 @@
+version: '3'
+
+volumes:
+  prom_data: {}
+  graf_data: {}
+
+services:
+    prom:
+      image: prom/prometheus:v2.0.0
+      ports:
+        - 9090:9090
+      volumes:
+        - prom_data:/prometheus
+        - ./etc/prometheus:/etc/prometheus
+      command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+
+    graf:
+      image: grafana/grafana
+      ports:
+        - 3000:3000
+      volumes:
+        - graf_data:/var/lib/grafana
+      environment:
+        - GF_USERS_ALLOW_SIGN_UP=false
+        - GF_DASHBOARDS_JSON_ENABLED=true
+
+    node_exporter:
+      image: prom/node-exporter
+      expose:
+        - 9100
+
+    cadvisor:
+      image: google/cadvisor:v0.28.3
+      expose:
+        - 8080
+      volumes:
+        - /:/rootfs:ro
+        - /sys:/sys:ro
+        - /var/run:/var/run:rw
+        - /var/lib/docker/:/var/lib/docker:ro
